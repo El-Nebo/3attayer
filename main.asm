@@ -1668,6 +1668,8 @@ ENDM Delay
 	NetWidth               EQU 10
 	NetStartX              EQU (WindowsWidth/2)-(NetWidth/2)
 	NetEndX                EQU (WindowsWidth/2)+(NetWidth/2)
+	NetHeight              EQU 107
+	NetStartY              EQU WindowsHeight - NetHeight
 	GroundStartY           EQU 200
 
 
@@ -1686,17 +1688,17 @@ MAIN PROC FAR
 	              INT       10h
 
 	              DrawImg   BackGroundImg,BackGroundHeigh,BackGroundWidth,Ball_X,Ball_Y
-	              mov       Ball_X,50                                                  	;set ball initial place
-	              mov       Ball_Y,75                                                  	;set ball initial place
-	              mov       BallVerticalVelocity,0
-	              mov       BallHorizontalVelocity,5
+	              mov       Ball_X,75                                                  	;set ball initial place
+	              mov       Ball_Y,50                                                  	;set ball initial place
+	              mov       BallVerticalVelocity,42
+	              mov       BallHorizontalVelocity,-10
 
 				    		 	
 	              DrawImg   BallImg, Ballsize, Ballsize, Ball_X, Ball_Y
 	              mov       cx,0ffffh
 	L1:           
 	              Call      MoveBall
-	              Delay     0,10000
+	              Delay     0,30000
 	              JMP       L1
 	LP:           
 	              clearArea Ballsize, BallSize, Ball_Y, Ball_X
@@ -1715,10 +1717,19 @@ MAIN PROC FAR
 MAIN ENDP
 
 
-MoveBall PROC
+MoveBall PROC	NEAR
+
+
+				  cmp       Ball_Y,0-Ballsize
+				  JG CLEARBALLHERE
+				  mov dx,0
+				  clearArea  Ballsize, Ballsize, Ball_X, dx
+				  JMP CALCULATEMOVEHERE
+				  CLEARBALLHERE:
 	              clearArea Ballsize, BallSize, Ball_X, Ball_Y
 	;;;;;;;;;Calculating Positions and velocities and Applying bounce;;;;;;
 	;--------Calculating New Y
+	CALCULATEMOVEHERE:
 	              mov       ah,0
 	              mov       al,g
 	              mov       bl,deltaT
@@ -1762,19 +1773,60 @@ MoveBall PROC
 	;-----------CHECK LEFT WALL
 	              mov       bx,Ball_X
 	              cmp       bx,0
-	              jA        abbas3
+	              jG        abbas3
 	              neg       BallHorizontalVelocity
 	              mov       Ball_X,0
 	abbas3:       
 
-	;------------------------CHECK NET
-	
+	;------------------------CHECK NET(right side)
 
+	              cmp       Ball_X,NetEndX
+	              ja        abbas4
+	              cmp       Ball_X, NetEndX-Ballsize
+	              jb        abbas4
+	              cmp       Ball_Y,NetStartY-Ballsize/2
+	              jb        abbas4
+	              mov       ax,NetEndX
+	              mov       Ball_X,ax
+	              neg       BallHorizontalVelocity
+
+	abbas4:       
+
+
+	
+	;------------------------CHECK NET(Left side)
+	
+	              cmp       Ball_X,NetStartX-Ballsize
+	              JB        abbas5
+	              cmp       Ball_X, NetStartX
+	              JA        abbas5
+	              cmp       Ball_Y,NetStartY-Ballsize/2
+	              jb        abbas5
+	              mov       ax,NetStartX-Ballsize
+	              mov       Ball_X,ax
+	              neg       BallHorizontalVelocity
+
+	abbas5:       
 	
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+
+	;-------------------------If the ball got out of the screen----------------
+	              cmp       Ball_Y,0-Ballsize
+				  JG DRAWBALLHERE
+				  ;draw ball sign 
+				  mov dx,0
+				  DrawImg   BallImg, Ballsize, Ballsize, Ball_X, dx
+				  JMP ENDMOVE
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+DRAWBALLHERE:
 	              DrawImg   BallImg, Ballsize, Ballsize, Ball_X, Ball_Y
+
+	ENDMOVE:       
+
 
 
 	              RET
