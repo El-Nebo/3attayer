@@ -39,16 +39,21 @@ ENDM Delay
 	WindowsWidth           EQU 320
 	WindowsHeight          EQU 200
 	;BackGround Color
+	;---------------Phisics
+	g                      EQU 1                                                                                                                                                                                                    	;Gravity
+	T                      dw  0
+	deltaT                 EQU 1
 	;---------------------Ball Data-----------------
 	BallSize               EQU 12
 	Ball_X                 dw  ?
 	Ball_Y                 dw  ?
 	BallVerticalVelocity   dw  ?
 	BallHorizontalVelocity dw  ?
-	BallImg                 DB 0, 0, 0, 31, 31, 30, 31, 31, 30, 0, 0, 0, 0, 0, 31, 31, 31, 30, 31, 30, 29, 28, 0, 0, 0, 31, 31, 30, 30, 29, 30, 29, 29, 28, 27, 0, 30, 29, 29, 30 
-							DB 30, 29, 29, 29, 27, 27, 26, 25, 29, 29, 29, 29, 29, 28, 27, 28, 27, 26, 25, 24, 28, 28, 28, 27, 27, 27, 26, 26, 25, 24, 24, 22, 26, 26, 27, 27, 26, 26, 26, 24 
-							DB 24, 23, 23, 22, 26, 26, 26, 26, 26, 25, 25, 24, 24, 23, 21, 22, 25, 25, 25, 25, 25, 25, 24, 24, 22, 22, 22, 22, 0, 24, 25, 25, 24, 24, 23, 23, 21, 22, 22, 0 
-							DB 0, 0, 23, 23, 23, 23, 22, 22, 22, 21, 0, 0, 0, 0, 0, 23, 22, 22, 22, 22, 22, 0, 0, 0
+	DivisionConstant       EQU 5
+	BallImg                DB  0, 0, 0, 31, 31, 30, 31, 31, 30, 0, 0, 0, 0, 0, 31, 31, 31, 30, 31, 30, 29, 28, 0, 0, 0, 31, 31, 30, 30, 29, 30, 29, 29, 28, 27, 0, 30, 29, 29, 30
+	                       DB  30, 29, 29, 29, 27, 27, 26, 25, 29, 29, 29, 29, 29, 28, 27, 28, 27, 26, 25, 24, 28, 28, 28, 27, 27, 27, 26, 26, 25, 24, 24, 22, 26, 26, 27, 27, 26, 26, 26, 24
+	                       DB  24, 23, 23, 22, 26, 26, 26, 26, 26, 25, 25, 24, 24, 23, 21, 22, 25, 25, 25, 25, 25, 25, 24, 24, 22, 22, 22, 22, 0, 24, 25, 25, 24, 24, 23, 23, 21, 22, 22, 0
+	                       DB  0, 0, 23, 23, 23, 23, 22, 22, 22, 21, 0, 0, 0, 0, 0, 23, 22, 22, 22, 22, 22, 0, 0, 0
 	
 	;------------------Background Data---------
 	BackGroundHeigh        EQU 200
@@ -1653,11 +1658,21 @@ ENDM Delay
 	                       DB  29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 28, 28
 	                       DB  89, 28, 28, 29, 29, 29, 29, 29, 28, 29, 28, 28, 29, 29, 29, 29, 29, 29, 29, 90, 28, 89, 28, 28, 28, 29, 29, 29, 29, 29, 90, 29, 29, 29, 29, 29, 29, 29, 29, 29
 	                       DB  29, 29, 29, 90, 28, 28, 28, 28, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 28, 29, 28, 28, 28, 28, 28, 28, 28, 31
+	
 	;-------------------DrawImage/Clear Area Data----------
 	HorizontalOffset       dw  ?
 	VerticalOffset         dw  ?
 	AreaWidth              dw  ?
 	AreaHeight             dw  ?
+	;---------------------Playground Data----------
+	NetWidth               EQU 10
+	NetStartX              EQU (WindowsWidth/2)-(NetWidth/2)
+	NetEndX                EQU (WindowsWidth/2)+(NetWidth/2)
+	GroundStartY           EQU 200
+
+
+
+	
 	   ;;;;;;;;;;
 .CODE
 MAIN PROC FAR
@@ -1671,6 +1686,18 @@ MAIN PROC FAR
 	              INT       10h
 
 	              DrawImg   BackGroundImg,BackGroundHeigh,BackGroundWidth,Ball_X,Ball_Y
+	              mov       Ball_X,50                                                  	;set ball initial place
+	              mov       Ball_Y,75                                                  	;set ball initial place
+	              mov       BallVerticalVelocity,0
+	              mov       BallHorizontalVelocity,5
+
+				    		 	
+	              DrawImg   BallImg, Ballsize, Ballsize, Ball_X, Ball_Y
+	              mov       cx,0ffffh
+	L1:           
+	              Call      MoveBall
+	              Delay     0,10000
+	              JMP       L1
 	LP:           
 	              clearArea Ballsize, BallSize, Ball_Y, Ball_X
 	              INC       Ball_X
@@ -1688,6 +1715,70 @@ MAIN PROC FAR
 MAIN ENDP
 
 
+MoveBall PROC
+	              clearArea Ballsize, BallSize, Ball_X, Ball_Y
+	;;;;;;;;;Calculating Positions and velocities and Applying bounce;;;;;;
+	;--------Calculating New Y
+	              mov       ah,0
+	              mov       al,g
+	              mov       bl,deltaT
+	              imul      bl
+	              add       BallVerticalVelocity,ax
+	              mov       ax,BallVerticalVelocity
+	              add       ax,g/2
+	;;;;;; dx mush carry sign flag of ax
+	              CWD
+	;;;;;;;;;;;;
+	              mov       bx,DivisionConstant
+	              IDIV      bx
+	              add       Ball_Y,ax
+	;--------------Calculating New X
+	              mov       ax,BallHorizontalVelocity
+	              mov       bx,DivisionConstant
+	              CWD
+	              IDIV      bx
+	              add       Ball_X,ax
+
+	;----------CHECK GROUND BOUNCE
+	              mov       bx,Ball_Y
+	              add       bx,Ballsize
+	              mov       ax,GroundStartY
+	              cmp       bx,ax
+	              jL        abbas
+	              neg       BallVerticalVelocity
+	              mov       Ball_Y,GroundStartY-BallSize
+	abbas:        
+
+
+	;------------CHECK RIGHT WALL
+	              mov       bx,Ball_X
+	              add       bx,Ballsize
+	              cmp       bx,WindowsWidth
+	              jL        abbas2
+	              neg       BallHorizontalVelocity
+	              mov       Ball_X,WindowsWidth-Ballsize
+	abbas2:       
+
+	;-----------CHECK LEFT WALL
+	              mov       bx,Ball_X
+	              cmp       bx,0
+	              jA        abbas3
+	              neg       BallHorizontalVelocity
+	              mov       Ball_X,0
+	abbas3:       
+
+	;------------------------CHECK NET
+	
+
+	
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	              DrawImg   BallImg, Ballsize, Ballsize, Ball_X, Ball_Y
+
+
+	              RET
+MoveBall ENDP
 
 Draw Proc  Near
 	              pop       IP_Pointer_Temp                                            	;store ip pointer for return
@@ -1698,8 +1789,8 @@ Draw Proc  Near
 	              pop       bx                                                         	;Carry Img data pointer
 
 	;setting interrupt configurations
-	              MOV       CX, 0 ;AreaWidth ;0
-	              MOV       DX, 0; AreaHeight ;0
+	              MOV       CX, 0                                                      	;AreaWidth ;0
+	              MOV       DX, 0                                                      	; AreaHeight ;0
 	              add       cx,VerticalOffset
 	              add       dx,HorizontalOffset
 	              mov       di,bx
@@ -1715,17 +1806,17 @@ Draw Proc  Near
 	;call dddd
 	StartDrawing: 
 	              inc       DI                                                         	;move to next pixel
-	              INC       Cx	;dec
-				  mov       bx,VerticalOffset
-				  add       bx,AreaWidth
-	              cmp       cx,bx ;VerticalOffset ;+areawidth
+	              INC       Cx                                                         	;dec
+	              mov       bx,VerticalOffset
+	              add       bx,AreaWidth
+	              cmp       cx,bx                                                      	;VerticalOffset ;+areawidth
 	              JNZ       Drawit
-	              mov       Cx, 0 ;AreaWidth	;0
+	              mov       Cx, 0                                                      	;AreaWidth	;0
 	              add       cx,VerticalOffset
-	              INC       DX	;dec
-				  mov       bx,HorizontalOffset
-				  add       bx,AreaHeight
-	              cmp       dx,bx ;HorizontalOffset	;+areaheight
+	              INC       DX                                                         	;dec
+	              mov       bx,HorizontalOffset
+	              add       bx,AreaHeight
+	              cmp       dx,bx                                                      	;HorizontalOffset	;+areaheight
 	              JZ        ENDDrawing
 	              Jmp       Drawit
 
@@ -1756,41 +1847,41 @@ Clear Proc  Near
 	              pop       AreaHeight
 
 	;setting interrupt configurations
-	              MOV       CX, 0 ;AreaWidth ;0
-	              MOV       DX, 0 ;AreaHeight ;0
-	              add       cx,VerticalOffset 
+	              MOV       CX, 0                                                      	;AreaWidth ;0
+	              MOV       DX, 0                                                      	;AreaHeight ;0
+	              add       cx,VerticalOffset
 	              add       dx,HorizontalOffset
 	              mov       di,bx
 	              jmp       StartClearing
 
 	Clearit:      
 
-				  push dx		;store dx, to be returned later
-				  mov ax,dx
-				  mov bx,320
-				  mul bx		;ax = dx*320
-				  add ax,cx
-				  mov si,ax		;si here point to the same pixel that should be removed but in background data
-				  pop dx	  ;return dx(row number)
+	              push      dx                                                         	;store dx, to be returned later
+	              mov       ax,dx
+	              mov       bx,320
+	              mul       bx                                                         	;ax = dx*320
+	              add       ax,cx
+	              mov       si,ax                                                      	;si here point to the same pixel that should be removed but in background data
+	              pop       dx                                                         	;return dx(row number)
 
 	              MOV       AH,0Ch                                                     	;draw pixel mode
-	              mov 		al,BackGroundImg[SI]			;color of current background pixel
-				  ;mov       al,BGC                                                     	;draw pixel with background color
+	              mov       al,BackGroundImg[SI]                                       	;color of current background pixel
+	;mov       al,BGC                                                     	;draw pixel with background color
 	              MOV       BH,00h                                                     	;page number
 	              INT       10h
 	StartClearing:
 	              inc       DI                                                         	;move to next pixel
-	              INC       Cx ;dec
-				  mov       bx,VerticalOffset
-				  add       bx,AreaWidth
-	              cmp       cx,bx ;VerticalOffset
+	              INC       Cx                                                         	;dec
+	              mov       bx,VerticalOffset
+	              add       bx,AreaWidth
+	              cmp       cx,bx                                                      	;VerticalOffset
 	              JNZ       Clearit
-	              mov       Cx, 0 ;AreaWidth ;0
+	              mov       Cx, 0                                                      	;AreaWidth ;0
 	              add       cx,VerticalOffset
-	              INC       DX ;dec
-				  mov       bx,HorizontalOffset
-				  add       bx,AreaHeight
-	              cmp       dx,bx ;HorizontalOffset
+	              INC       DX                                                         	;dec
+	              mov       bx,HorizontalOffset
+	              add       bx,AreaHeight
+	              cmp       dx,bx                                                      	;HorizontalOffset
 	              JZ        EndClearing
 	              Jmp       Clearit
 
