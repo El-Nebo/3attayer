@@ -1785,7 +1785,7 @@ MoveBall PROC	NEAR
 	              cmp       Ball_X, NetEndX-Ballsize
 	              jb        abbas4
 	              cmp       Ball_Y,NetStartY-Ballsize/2
-	              jb        abbas4
+	              JL        abbas4
 	              mov       ax,NetEndX
 	              mov       Ball_X,ax
 	              neg       BallHorizontalVelocity
@@ -1801,7 +1801,7 @@ MoveBall PROC	NEAR
 	              cmp       Ball_X, NetStartX
 	              JA        abbas5
 	              cmp       Ball_Y,NetStartY-Ballsize/2
-	              jb        abbas5
+	              JL        abbas5
 	              mov       ax,NetStartX-Ballsize
 	              mov       Ball_X,ax
 	              neg       BallHorizontalVelocity
