@@ -1671,7 +1671,11 @@ ENDM Delay
 	NetHeight              EQU 107
 	NetStartY              EQU WindowsHeight - NetHeight
 	GroundStartY           EQU 200
+	;--------------Player DAta
 
+
+	
+	;----------------------------------
 
 
 	
@@ -1688,10 +1692,10 @@ MAIN PROC FAR
 	              INT       10h
 
 	              DrawImg   BackGroundImg,BackGroundHeigh,BackGroundWidth,Ball_X,Ball_Y
-	              mov       Ball_X,75                                                  	;set ball initial place
+	              mov       Ball_X,160                                                  	;set ball initial place
 	              mov       Ball_Y,50                                                  	;set ball initial place
-	              mov       BallVerticalVelocity,42
-	              mov       BallHorizontalVelocity,-10
+	              mov       BallVerticalVelocity,10
+	              mov       BallHorizontalVelocity,20
 
 				    		 	
 	              DrawImg   BallImg, Ballsize, Ballsize, Ball_X, Ball_Y
