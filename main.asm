@@ -2222,7 +2222,7 @@ MoveBall PROC	NEAR
 	;------------Check Player2 Collision
 	CHKPlayer2Collision:
 							mov         ax,0
-	                        Call        CheckBallPlayer1Collision
+	                        Call        CheckBallPlayer2Collision
 	                        cmp         ax,1
 	                        jnz         CheckBallOutOfScreen
 							Call        BallPlayer2CollisionCalculations
