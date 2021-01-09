@@ -1813,7 +1813,7 @@ BackgroundData ENDS
 	WindowsWidth            EQU 320
 	WindowsHeight           EQU 200
 	Exit                    db  0
-	MAX_Score               EQU 11
+	MAX_Score               EQU 2
 	Last_Winner             db  1
 	PointFinished           db  0
 	;BackGround Color
@@ -1828,8 +1828,8 @@ BackgroundData ENDS
 	final_msg_2             db  " is the Winner :) $"
 	final_msg_3             db  "It's a TIE :| $"
 
-	final_msg_4             db  "*press ESC to close the program. $"
-	final_msg_5             db  "*press F2 to play again. $"
+	final_msg_4             db  "*press F2 to return to main menu $"
+	final_msg_5             db  "*press Esc to return to main menu too :D. $"
 	username1               db  16,?,17 dup('$')
 	username2               db  16,?,17 dup('$')
 
@@ -1843,12 +1843,12 @@ BackgroundData ENDS
 	;---------------MAINMENU screen
 	MAINMENU_mesg1          db  "*To start chatting press F1",'$'
 	MAINMENU_mesg2          db  "*To start volleyball game press F2",'$'
-	MAINMENU_mesg3          db  "*To end the program press ESC",'$'
+	MAINMENU_mesg3          db  "*To end the program press F3",'$'
 	play_again              db  1
 	;---------------chat_mode screen
 	chat_msg1               db  "*The chat mode is currently unavailable (please try again later).$"
 	chat_msg2               db  "*To start volleyball game press F2",'$'
-	chat_msg3               db  "*To end the program press F3",'$'
+	chat_msg3               db  "*To end the program press ESC",'$'
 	;---------------Phisics
 	g                       EQU 1
 	HorizontalResistance    EQU 1                                                                                                                                                                                    	;Gravity
@@ -2364,9 +2364,9 @@ Game PROC NEAR
 	                                  Call                  MovePlayer1
 	                                  Call                  MovePlayer2
 	                                  Call                  MoveBall
+	                                  CALL                  DrawScores
 	                                  CALL                  Send_Data_to_Player_2
 	                                  CALL                  Receive_Data_From_Player_2
-	                                  CALL                  DrawScores
 	                                  cmp                   gotochat,1
 	                                  jne                   chkforchat
 	                                  mov                   gotochat,0
