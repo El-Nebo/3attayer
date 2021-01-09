@@ -63,6 +63,33 @@ print_mesg MACRO x_axis,y_axis,defining_byte,localmsg  		;defining_byte=1 to rea
 	                      lea         dx,localmsg
 	                      int         21h
 ENDM
+print_status_mesg MACRO localmsg
+	                  print_mesg 0,24,1,cleanmsg
+	                  print_mesg 0,24,1,localmsg
+ENDM
+print_status_2_mesg MACRO localmsg1,localmsg2
+	                    Clear_status_bar
+	                    print_mesg       0,24,1,localmsg1
+	                    mov              ah,2
+	                    mov              dl,' '
+	                    int              21h
+	                    print_mesg       0,24,0,localmsg2
+ENDM
+print_status_3_mesg MACRO localmsg1,localmsg2,localmsg3
+	                    Clear_status_bar
+	                    print_mesg       0,24,1,localmsg1
+	                    mov              ah,2
+	                    mov              dl,' '
+	                    int              21h
+	                    print_mesg       0,24,0,localmsg2
+	                    mov              ah,2
+	                    mov              dl,' '
+	                    int              21h
+	                    print_mesg       0,24,0,localmsg3
+ENDM
+Clear_status_bar MACRO
+	                 print_status_mesg cleanmsg
+ENDM
 read_string MACRO x_axis,y_axis,defining_byte,wanted_string		;defining_byte=1 to reallocating the cursor and 0 to let it in its place
 	                      LOCAL       dont_change_thecursor
 	                      mov         ah,defining_byte
@@ -120,8 +147,6 @@ validate Macro charachter
 	         push  ax
 	okok:    
 ENDM
-
-
 Check_For_Key_Pressed MACRO
 	                      LOCAL NoKeyPressed,EndMacro
 	                      mov   ah,1
@@ -136,7 +161,26 @@ Check_For_Key_Pressed MACRO
 	                      mov   al,-1
 	EndMacro:             
 ENDM	
-
+FixUserName MACRO usrnm
+	            local fixloop1,compare13,ENDFIXLOOP
+	            mov   si, offset usrnm
+	            add   si,2
+	            mov   al,'$'
+	            mov   bl,10
+	            mov   bh,13
+	            mov   cx,17
+	fixloop1:   
+	            cmp   [si],bl
+	            jne   compare13
+	            mov   [si],al
+	compare13:  cmp   [si],bh
+	            jne   ENDFIXLOOP
+	            mov   [si],al
+	ENDFIXLOOP: 
+	            inc   si
+	            dec   cx
+	            jnz   fixloop1
+ENDM
 .model HUGE
 .Stack 64
 
@@ -1786,7 +1830,6 @@ BackgroundData ENDS
 
 	final_msg_4             db  "*press ESC to close the program. $"
 	final_msg_5             db  "*press F2 to play again. $"
-
 	username1               db  16,?,17 dup('$')
 	username2               db  16,?,17 dup('$')
 
@@ -2045,7 +2088,14 @@ BackgroundData ENDS
 	mes_wair_for_level      db  'Please wait while other player choose game level',10,13,'$'
 	GameLevel               db  ?
 	Delay_A                 dw  ?
-	Delay_B					dw   ?
+	Delay_B                 dw  ?
+	cleanmsg                db  '                                                                            $'
+	wantstochat             db  'wants to chat','$'
+	wantstoplay             db  'wants to play','$'
+	waiting                 db  'waiting','$'
+	responsetochat          db  'response to chat','$'
+	responsetoplay          db  'response to play','$'
+
 .CODE
 	;  ___               ___
 	; |   \             /   |
@@ -2114,6 +2164,10 @@ USERNAMES PROC NEAR
 	                                 inc                   di
 	                                 dec                   cx
 	                                 jnz                   USERNAMELOOP
+	;remove enter at the end of uusernames
+	                                 FixUserName           username1
+	                                 FixUserName           username2
+	                                 print_status_3_mesg   waiting,username1+2,responsetoplay
 	                                 RET
 USERNAMES ENDP
 
@@ -2140,7 +2194,22 @@ Send_Char ENDP
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
 
+Force_Receive_Char PROC NEAR
+	                                 mov                   Char_Received , -1
+	                                 mov                   dx , 3FDH                                                    	; Line Status Register
+	RETURN11:                        in                    al , dx
+	                                 test                  al , 1
+	                                 JZ                    RETURN11                                                     	;Not Ready
+	;If Ready read the VALUE in Receive data register
+	                                 mov                   dx , 03F8H
+	                                 in                    al , dx
+	                                 mov                   Char_Received , al
+	                        
+	                                 RET
+Force_Receive_Char ENDP
+
 Receive_Char PROC NEAR
+	                                 mov                   Char_Received , -1
 	                                 mov                   dx , 3FDH                                                    	; Line Status Register
 	                                 in                    al , dx
 	                                 test                  al , 1
@@ -2198,13 +2267,13 @@ Adjusting_GAME_LEVEL PROC NEAR
 	                                 Check_For_Key_Pressed
 	                                 cmp                   ah,-1
 	                                 je                    WaitUntillAKeyPressed
-	                                 cmp                   al,31h                                                        	;if user click 1
+	                                 cmp                   al,31h                                                       	;if user click 1
 	                                 jne                   checkforclick2
 	                                 mov                   GameLevel,1
 	                                 mov                   Delay_A,0
 	                                 mov                   Delay_B,25000
 	                                 JMP                   SendLevel
-	checkforclick2:                  cmp                   al,32h                                                        	;if user click 2
+	checkforclick2:                  cmp                   al,32h                                                       	;if user click 2
 	                                 jne                   WaitUntillAKeyPressed
 	                                 mov                   GameLevel,2
 	                                 mov                   Delay_A,0
@@ -2225,7 +2294,7 @@ Adjusting_GAME_LEVEL PROC NEAR
 	                                 mov                   GameLevel,1
 	                                 mov                   Delay_A,0
 	                                 mov                   Delay_B,25000
-									 RET
+	                                 RET
 	CompareLevel2:                   
 	                                 cmp                   Char_Received,2
 	                                 jne                   WairForGameLevel
@@ -2280,6 +2349,7 @@ MAINMENU PROC NEAR
 	                                 MOV                   DX, 184FH                                                    	; lower right corner DH=row, DL=column
 	                                 MOV                   BH, 07fh
 	                                 INT                   10H
+
 
 	; show mesg
 	                                 print_mesg            25,10,1,MAINMENU_mesg1
@@ -2338,44 +2408,66 @@ MAINMENU PROC NEAR
 	                                 CALL                  Send_Char
 	                                 JMP                   ENDPROGRAM
 
-
 	palyer2_pressed_f1:              
-	                                 Check_For_Key_Pressed
+	                                 print_status_2_mesg   username2+2,wantstochat
+	LP1:                             Check_For_Key_Pressed
+	                                 cmp                   ah,F2
+	                                 je                    palyer1_pressed_f2
+	                                 cmp                   ah,F3
+	                                 je                    SendThenEnd
 	                                 cmp                   ah ,F1
-	                                 jne                   palyer2_pressed_f1
+	                                 jne                   LP1
 	                                 mov                   Char_Sent,F1
 	                                 CALL                  Send_Char
-
 	                                 CALL                  chat_mode                                                    	;chat mode
 
 	palyer2_pressed_f2:              
+	                                 print_status_2_mesg   username2+2,wantstoplay
 	                                 mov                   Controller_Player,2
 	LP2:                             
 	                                 Check_For_Key_Pressed
+	                                 cmp                   ah,F1
+	                                 je                    palyer1_pressed_f1
+	                                 cmp                   ah,F3
+	                                 je                    SendThenEnd
 	                                 cmp                   ah ,F2
 	                                 jne                   LP2
 	                                 mov                   Char_Sent,F2
 	                                 CALL                  Send_Char
 
 	                                 CALL                  Game                                                         	;game mode
-	palyer1_pressed_f1:              mov                   Char_Sent,F1
+	palyer1_pressed_f1:              
+	                                 print_status_3_mesg   waiting,username2+2,responsetochat
+	                                 mov                   Char_Sent,F1
 	                                 CALL                  Send_Char
 	LP3:                             
 	                                 call                  Receive_Char
+	                                 cmp                   Char_Received,F2
+	                                 je                    palyer2_pressed_f2
+	                                 cmp                   Char_Received,F3
+	                                 je                    ENDPROGRAM
 	                                 cmp                   Char_Received ,F1
 	                                 jne                   LP3
 
 	                                 CALL                  chat_mode                                                    	;chat mode
 	palyer1_pressed_f2:              
+	                                 print_status_3_mesg   waiting,username2+2,responsetoplay
 	                                 mov                   Controller_Player,1
 	                                 mov                   Char_Sent,F2
 	                                 CALL                  Send_Char
 	LP4:                             
 	                                 call                  Receive_Char
+	                                 cmp                   Char_Received,F1
+	                                 je                    palyer2_pressed_f1
+	                                 cmp                   Char_Received,F3
+	                                 je                    ENDPROGRAM
 	                                 cmp                   Char_Received ,F2
 	                                 jne                   LP4
 
 	                                 CALL                  Game                                                         	;game mode
+									
+	SendThenEnd:                     mov                   Char_Sent,F3
+	                                 CALL                  Send_Char
 	ENDPROGRAM:                      
 
 	                                 RET
@@ -2474,6 +2566,7 @@ initial_screen proc NEAR
 	                                 MOV                   BH, 07fh
 	                                 INT                   10H
 
+
 	                                 print_mesg            0,24,1,initial_msg_warning
 	                                 print_mesg            0,23,1,dashedline
 	write_username1:                 
@@ -2484,6 +2577,7 @@ initial_screen proc NEAR
 	                                 cmp                   ax,0
 	                                 jz                    write_username1
 	intitial_return:                 
+
 	                                 ret
 initial_screen endp
 
