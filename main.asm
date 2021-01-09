@@ -1848,7 +1848,7 @@ BackgroundData ENDS
 	;---------------chat_mode screen
 	chat_msg1               db  "*The chat mode is currently unavailable (please try again later).$"
 	chat_msg2               db  "*To start volleyball game press F2",'$'
-	chat_msg3               db  "*To end the program press ESC",'$'
+	chat_msg3               db  "*To end the program press F3",'$'
 	;---------------Phisics
 	g                       EQU 1
 	HorizontalResistance    EQU 1                                                                                                                                                                                    	;Gravity
@@ -2323,9 +2323,13 @@ Game PROC NEAR
 	;open graphics mode
 	                                  mov                   ax, 0013h
 	                                  INT                   10h
+									  
 
+									  mov score_1,0
+									  mov score_2,0
 	                                  cmp                   Controller_Player,1
 	                                  jz                    InitialConditions
+
 									 
 	;------------------------------Player 2 is the controller
 	                                  mov                   bx,0
@@ -2342,6 +2346,7 @@ Game PROC NEAR
 	                                  CALL                  Player2_Draw_Obj
 	                                  Delay                 Delay_A,Delay_B
 	                                  CALL                  DrawScores
+	                                  CALL                  Check_Player2_for_winner
 	                                  cmp                   Exit,0
 	                                  jnz                   EndGame
 	                                  cmp                   gotochat,1
@@ -2356,11 +2361,11 @@ Game PROC NEAR
 									
 	;Game Loop
 	MainLoop:                                                                                                                        	;Call        MovePlayer1
-	                                  CALL                  Send_Data_to_Player_2
-	                                  CALL                  Receive_Data_From_Player_2
 	                                  Call                  MovePlayer1
 	                                  Call                  MovePlayer2
 	                                  Call                  MoveBall
+	                                  CALL                  Send_Data_to_Player_2
+	                                  CALL                  Receive_Data_From_Player_2
 	                                  CALL                  DrawScores
 	                                  cmp                   gotochat,1
 	                                  jne                   chkforchat
@@ -2391,6 +2396,16 @@ Game PROC NEAR
 	                                  RET
 GAME ENDP
 
+Check_Player2_for_winner PROC NEar
+	                                  cmp                   score_1,MAX_Score
+	                                  jne                   cmpscr2
+	                                  mov                   exit,1
+	cmpscr2:                          cmp                   score_2,MAX_Score
+	                                  jne                   rrttnn
+	                                  mov                   exit,1
+	rrttnn:                           
+	                                  RET
+Check_Player2_for_winner ENDP
 	;__________________________________________________________________
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
@@ -2450,6 +2465,14 @@ Receive_Data_From_Player_1 PROC NEAR
 	                                  CALL                  Force_Receive_Char
 	                                  mov                   bl,Char_Received
 	                                  mov                   gotochat,bl
+
+	                                  CALL                  Force_Receive_Char
+	                                  mov                   bl,Char_Received
+	                                  mov                   score_1,bl
+
+	                                  CALL                  Force_Receive_Char
+	                                  mov                   bl,Char_Received
+	                                  mov                   score_2,bl
 
 
 
@@ -2513,6 +2536,13 @@ Send_Data_to_Player_2 PROC NEAR
 	                                  CALL                  Send_Char
 
 	                                  mov                   bl,gotochat
+	                                  mov                   Char_Sent,bl
+	                                  CALL                  Send_Char
+
+	                                  mov                   bl,score_2
+	                                  mov                   Char_Sent,bl
+	                                  CALL                  Send_Char
+	                                  mov                   bl,score_1
 	                                  mov                   Char_Sent,bl
 	                                  CALL                  Send_Char
 
@@ -2605,6 +2635,7 @@ Player2_Clear ENDP
 
 MAINMENU PROC NEAR
 	; clear
+	MAINMENUStart:                    
 	                                  MOV                   AH, 06h                                                                  	; Scroll up function
 	                                  XOR                   AL, AL                                                                   	; Clear entire screen
 	                                  mov                   CX,  0                                                                   	; Upper left corner CH=row, CL=column
@@ -2682,6 +2713,8 @@ MAINMENU PROC NEAR
 	                                  mov                   Char_Sent,F1
 	                                  CALL                  Send_Char
 	                                  CALL                  chat_mode                                                                	;chat mode
+	                                  JMP                   MAINMENUStart
+
 
 	palyer2_pressed_f2:               
 	                                  print_status_2_mesg   username2+2,wantstoplay
@@ -2700,6 +2733,7 @@ MAINMENU PROC NEAR
 	;------------Game Level----------------------------
 	                                  CALL                  Adjusting_GAME_LEVEL
 	                                  CALL                  Game                                                                     	;game mode
+	                                  JMP                   MAINMENUStart
 	palyer1_pressed_f1:               
 	                                  print_status_3_mesg   waiting,username2+2,responsetochat
 	                                  mov                   Char_Sent,F1
@@ -2714,6 +2748,8 @@ MAINMENU PROC NEAR
 	                                  jne                   LP3
 
 	                                  CALL                  chat_mode                                                                	;chat mode
+	                                  JMP                   MAINMENUStart
+
 	palyer1_pressed_f2:               
 	                                  print_status_3_mesg   waiting,username2+2,responsetoplay
 	                                  mov                   Controller_Player,1
@@ -2731,6 +2767,8 @@ MAINMENU PROC NEAR
 	;------------Game Level----------------------------
 	                                  CALL                  Adjusting_GAME_LEVEL
 	                                  CALL                  Game                                                                     	;game mode
+	                                  JMP                   MAINMENUStart
+
 									
 	SendThenEnd:                      mov                   Char_Sent,F3
 	                                  CALL                  Send_Char
@@ -2801,6 +2839,8 @@ Initial_Conditions Proc NEAR
 	;Draw The Background
 	                                  mov                   bx,0
 	                                  ClearArea             WindowsHeight,WindowsWidth,bx,bx
+									  
+	                                  
 
 	                                  mov                   Ball_X,WindowsWidth/4-Ballsize/2
 	                                  cmp                   Last_Winner,2
