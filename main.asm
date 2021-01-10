@@ -11,7 +11,7 @@ endm
 
 ClearArea Macro _ClearAreaHeight,_ClearAreaWidth,__ClerAreaVerticalOffset,__ClearAreaHorizontalOffset
 
-	
+
 
 	          mov    bx,__ClearAreaHorizontalOffset
 	          mov    cx,__ClerAreaVerticalOffset
@@ -125,7 +125,7 @@ validate Macro charachter
 	         LOCAL okok,notgood,goodone
 	         mov   al,41h
 	         mov   ah,5bh
- 
+
 	         mov   bl,61h
 	         mov   bh,7ah
 
@@ -181,6 +181,11 @@ FixUserName MACRO usrnm
 	            dec   cx
 	            jnz   fixloop1
 ENDM
+
+
+
+
+
 .model HUGE
 .Stack 64
 
@@ -1849,6 +1854,21 @@ BackgroundData ENDS
 	chat_msg1               db  "*The chat mode is currently unavailable (please try again later).$"
 	chat_msg2               db  "*To start volleyball game press F2",'$'
 	chat_msg3               db  "*To end the program press ESC",'$'
+    current_video_mode      db  ?
+
+
+
+
+	sendind_colors          equ 07fh
+	recieving_colors        equ 3fh
+	counter                 db  1
+	counter_x               db  1
+	counter_y1              db  0
+	counter_y2              db  13
+	sends                   db  ?,'$'
+	recieves                db  ?,'$'
+	s_cursor                db  0,0
+	r_cursor                db  0,13
 	;---------------Phisics
 	g                       EQU 1
 	HorizontalResistance    EQU 1                                                                                                                                                                                    	;Gravity
@@ -2105,7 +2125,7 @@ BackgroundData ENDS
 	Player2_Old_Player2_X   dw  ?
 	Player2_Old_Player1_Y   dw  ?
 	Player2_Old_Player2_Y   dw  ?
-	gotochat                db 0
+gotochat                db 0
 .CODE
 	;  ___               ___
 	; |   \             /   |
@@ -2118,7 +2138,7 @@ BackgroundData ENDS
 	; |_ |    \_____/    |__|
 
 MAIN PROC FAR
-	
+
 	                                  mov                   ax, @data
 	                                  mov                   DS, ax
 	                                  mov                   ES,ax
@@ -2132,7 +2152,7 @@ MAIN PROC FAR
 	                                  CALL                  MAINMENU
 	;wait for players to choose
 
-	
+
 	;end program
 	                                  mov                   ax,3
 	                                  int                   10h
@@ -2208,14 +2228,14 @@ Send_Char ENDP
 Force_Receive_Char PROC NEAR
 	                                  mov                   Char_Received , -1
 	                                  mov                   dx , 3FDH                                                                	; Line Status Register
-	RETURN11:                         in                    al , dx
+	RETURN112:                        in                    al , dx
 	                                  test                  al , 1
-	                                  JZ                    RETURN11                                                                 	;Not Ready
+	                                  JZ                    RETURN112                                                                	;Not Ready
 	;If Ready read the VALUE in Receive data register
 	                                  mov                   dx , 03F8H
 	                                  in                    al , dx
 	                                  mov                   Char_Received , al
-	                        
+
 	                                  RET
 Force_Receive_Char ENDP
 
@@ -2247,7 +2267,7 @@ ConfigureCommunication PROC NEAR
 	                                  out                   dx,al                                                                    	;Out it
 
 	                                  mov                   dx,3f8h
-	                                  mov                   al,1h
+	                                  mov                   al,01h
 	                                  out                   dx,al
 
 	                                  mov                   dx,3f9h
@@ -2258,9 +2278,10 @@ ConfigureCommunication PROC NEAR
 	                                  mov                   al,00011011b
 	                                  out                   dx,al
 
+                                    
 	                                  RET
 ConfigureCommunication ENDP
-	
+
 	;__________________________________________________________________
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
@@ -2323,23 +2344,19 @@ Game PROC NEAR
 	;open graphics mode
 	                                  mov                   ax, 0013h
 	                                  INT                   10h
-									  
+			
 
-									  mov score_1,0
-									  mov score_2,0
+	                                  CALL                  Play_Again_proc
+
 	                                  cmp                   Controller_Player,1
 	                                  jz                    InitialConditions
 
-									 
+			
 	;------------------------------Player 2 is the controller
 	                                  mov                   bx,0
 	                                  ClearArea             WindowsHeight,WindowsWidth,bx,bx                                         	;drawing background
 	Player2_MainLoop:                 
 	;--check for chat
-	;   CALL                  Receive_Char
-	;   cmp                   Char_Received,ESC_
-	;   jne                   plr2clr
-	;   call                  chat_mode
 	plr2clr:                          CALL                  Player2_Clear
 	                                  CALL                  Receive_Data_From_Player_1
 	                                  CALL                  Send_Data_to_Player_1
@@ -2358,7 +2375,7 @@ Game PROC NEAR
 	;------------------------------Player 1 is the controller
 	;Initial Conditions
 	InitialConditions:                CALL                  Initial_Conditions
-									
+		
 	;Game Loop
 	MainLoop:                                                                                                                        	;Call        MovePlayer1
 	                                  Call                  MovePlayer1
@@ -2377,7 +2394,7 @@ Game PROC NEAR
 	                                  Check_For_Key_Pressed
 	                                  cmp                   ah,ESC_
 	                                  jne                   clrbfr
-	                                  mov                   gotochat,ESC_
+	                                  mov                   gotochat,1
 	;----
 
 	clrbfr:                           ClearBuffer
@@ -2412,7 +2429,7 @@ Check_Player2_for_winner ENDP
 
 Receive_Data_From_Player_1 PROC NEAR
 	;print_mesg            10,10,1,abbasre
-									  
+			
 	LLPP2:                            
 	                                  call                  Receive_Char
 	                                  cmp                   Char_Received,-22
@@ -2482,7 +2499,7 @@ Receive_Data_From_Player_1 ENDP
 	;__________________________________________________________________
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
-	
+
 Send_Data_to_Player_2 PROC NEAR
 	;print_mesg 10,10,1,abbassend
 	                                  mov                   bh,-22
@@ -2547,10 +2564,10 @@ Send_Data_to_Player_2 PROC NEAR
 	                                  CALL                  Send_Char
 
 
-									
+		
 	                                  RET
 Send_Data_to_Player_2 ENDP
-	
+
 	;__________________________________________________________________
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
@@ -2592,12 +2609,12 @@ Receive_Data_From_Player_2 PROC NEAR
 	                                  mov                   Move_Player_2_Temp,ah
 	                                  RET
 Receive_Data_From_Player_2 ENDP
-	
+
 	;__________________________________________________________________
 	;__________________________________________________________________
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
-	
+
 Player2_Draw_Obj PROC NEAR
 	                                  clearArea             Ballsize, BallSize, Player2_Old_Ball_Y, Player2_Old_Ball_X
 	                                  clearArea             Player1Height, Player1Width, Player2_Old_Player1_Y, Player2_Old_Player1_x
@@ -2609,11 +2626,11 @@ Player2_Draw_Obj PROC NEAR
 
 	                                  RET
 Player2_Draw_Obj ENDP
-	
+
 	;__________________________________________________________________
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
-	
+
 Player2_Clear PROC NEAR
 	                                  mov                   ax,Ball_X
 	                                  mov                   Player2_Old_Ball_X,ax
@@ -2629,10 +2646,13 @@ Player2_Clear PROC NEAR
 	                                  mov                   Player2_Old_Player2_Y,ax
 	                                  RET
 Player2_Clear ENDP
-	
+
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
-
+try_proc_Check_For_Key_Pressed proc near
+Check_For_Key_Pressed
+ret
+try_proc_Check_For_Key_Pressed endp
 MAINMENU PROC NEAR
 	; clear
 	MAINMENUStart:                    
@@ -2687,27 +2707,33 @@ MAINMENU PROC NEAR
 	                                  cmp                   Char_Received ,F1
 	                                  je                    palyer2_pressed_f1
 	                                  cmp                   Char_Received ,F2
-	                                  je                    palyer2_pressed_f2
+	                                  je                    AAABBBCCC
 	                                  cmp                   Char_Received ,F3
-	                                  je                    ENDPROGRAM
+	                                  je                    ABDSES
 	                                  Check_For_Key_Pressed
 	                                  cmp                   ah ,F1
-	                                  je                    palyer1_pressed_f1
+	                                  je                    NMNMNM
 	                                  cmp                   ah ,F2
-	                                  je                    palyer1_pressed_f2
+	                                  je                    JKJK
 	                                  cmp                   ah ,F3
 	                                  jne                   MAINMENULOOP
 	                                  mov                   Char_Sent,F3
 	                                  CALL                  Send_Char
-	                                  JMP                   ENDPROGRAM
+	ABDSES:                           JMP                   ENDPROGRAM
+
+
+	AAABBBCCC:                        JMP                   palyer2_pressed_f2
+	NMNMNM:                           JMP                   palyer1_pressed_f1
+	JKJK:                             JMP                   palyer1_pressed_f2
+
 
 	palyer2_pressed_f1:               
 	                                  print_status_2_mesg   username2+2,wantstochat
-	LP1:                              Check_For_Key_Pressed
+	LP1:                              call try_proc_Check_For_Key_Pressed
 	                                  cmp                   ah,F2
-	                                  je                    palyer1_pressed_f2
+	                                  je                    JKJK
 	                                  cmp                   ah,F3
-	                                  je                    SendThenEnd
+	                                  je                    OIOIO
 	                                  cmp                   ah ,F1
 	                                  jne                   LP1
 	                                  mov                   Char_Sent,F1
@@ -2715,6 +2741,7 @@ MAINMENU PROC NEAR
 	                                  CALL                  chat_mode                                                                	;chat mode
 	                                  JMP                   MAINMENUStart
 
+	OIOIO:                            JMP                   SendThenEnd
 
 	palyer2_pressed_f2:               
 	                                  print_status_2_mesg   username2+2,wantstoplay
@@ -2724,7 +2751,7 @@ MAINMENU PROC NEAR
 	                                  cmp                   ah,F1
 	                                  je                    palyer1_pressed_f1
 	                                  cmp                   ah,F3
-	                                  je                    SendThenEnd
+	                                  je                    OIOTTIO
 	                                  cmp                   ah ,F2
 	                                  jne                   LP2
 	                                  mov                   Char_Sent,F2
@@ -2734,6 +2761,7 @@ MAINMENU PROC NEAR
 	                                  CALL                  Adjusting_GAME_LEVEL
 	                                  CALL                  Game                                                                     	;game mode
 	                                  JMP                   MAINMENUStart
+	OIOTTIO:                          JMP                   SendThenEnd
 	palyer1_pressed_f1:               
 	                                  print_status_3_mesg   waiting,username2+2,responsetochat
 	                                  mov                   Char_Sent,F1
@@ -2741,15 +2769,16 @@ MAINMENU PROC NEAR
 	LP3:                              
 	                                  call                  Receive_Char
 	                                  cmp                   Char_Received,F2
-	                                  je                    palyer2_pressed_f2
+	                                  je                    DSAF
 	                                  cmp                   Char_Received,F3
-	                                  je                    ENDPROGRAM
+	                                  je                    LKLKLK
 	                                  cmp                   Char_Received ,F1
 	                                  jne                   LP3
 
 	                                  CALL                  chat_mode                                                                	;chat mode
 	                                  JMP                   MAINMENUStart
-
+	DSAF:                             JMP                   palyer2_pressed_f2
+	LKLKLK:                           JMP                   ENDPROGRAM
 	palyer1_pressed_f2:               
 	                                  print_status_3_mesg   waiting,username2+2,responsetoplay
 	                                  mov                   Controller_Player,1
@@ -2758,7 +2787,7 @@ MAINMENU PROC NEAR
 	LP4:                              
 	                                  call                  Receive_Char
 	                                  cmp                   Char_Received,F1
-	                                  je                    palyer2_pressed_f1
+	                                  je                    YTYTY
 	                                  cmp                   Char_Received,F3
 	                                  je                    ENDPROGRAM
 	                                  cmp                   Char_Received ,F2
@@ -2768,8 +2797,9 @@ MAINMENU PROC NEAR
 	                                  CALL                  Adjusting_GAME_LEVEL
 	                                  CALL                  Game                                                                     	;game mode
 	                                  JMP                   MAINMENUStart
+	YTYTY:                            JMP                   palyer2_pressed_f1
 
-									
+		
 	SendThenEnd:                      mov                   Char_Sent,F3
 	                                  CALL                  Send_Char
 	ENDPROGRAM:                       
@@ -2793,54 +2823,377 @@ Play_Again_proc PROC NEAR
 	                                  mov                   Last_Winner, 1
 	                                  mov                   PointFinished, 0
 
-
-	                                  call                  Game
 	                                  RET
 Play_Again_proc ENDP
 
 	;__________________________________________________________________
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
+	;--------------------------------------------------------------------------
+	; clears keyboard buffer
+	;--------------------------------------------------------------------------
+clearkeyboardbuffer proc	near
 
+	                                  push                  ax
+	                                  push                  es
+	                                  mov                   ax, 0000h
+	                                  mov                   es, ax
+	                                  push                  bx
+	                                  mov                   bx,041eh
+	                                  mov                   es:[041ah], bx                                                           	;041eh
+	                                  mov                   es:[041ch], bx                                                           	;041eh				; Clears keyboard buffer
+	                                  pop                   bx
+	                                  pop                   es
+	                                  pop                   ax
+
+	                                  ret
+clearkeyboardbuffer endp
+
+	;__________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
+check_scroll_up_sending proc near
+
+
+	;check to scroll
+	                                  cmp                   counter_y1,12
+	                                  jne                   s_havent_reach_the_pageend
+
+
+	                                  mov                   ax,0601h
+	                                  mov                   bh,sendind_colors
+	                                  mov                   cx,0                                                                     	;from cl,ch
+	                                  mov                   dx,0b4FH                                                                 	;to dl,dh
+	                                  int                   10h
+	                                  dec                   counter_y1
+
+
+	s_havent_reach_the_pageend:       
+	                                  ret
+check_scroll_up_sending endp
+
+	;__________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
+check_scroll_up_recieving proc near
+
+	;check to scroll
+	                                  cmp                   counter_y2,25
+	                                  jne                   r_havent_reach_the_pageend
+
+	                                  mov                   ax,0601h
+	                                  mov                   bh,recieving_colors
+	                                  mov                   cx,0d00H                                                                 	;from cl,ch
+	                                  mov                   dx,184FH                                                                 	;to dl,dh
+	                                  int                   10h
+	                                  dec                   counter_y2
+
+
+	r_havent_reach_the_pageend:       
+	                                  ret
+check_scroll_up_recieving endp
+	;__________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
+recieve_data proc near
+	;if al=0 then there is no input
+
+	                                  mov                   dx,3fdh
+	                                  in                    al,dx
+	                                  and                   al,00000001b
+	                                  jz                    no_in
+
+	                                  mov                   dx,3f8h
+	                                  in                    al,dx
+	                                  mov                   recieves,al
+	                                  jmp                   recieve_goout
+
+	no_in:                            mov                   al,0
+
+	recieve_goout:                    
+
+	                                  ret
+recieve_data endp
+	;__________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
+send_data proc near
+
+	                                  mov                   dx,3fdh
+	again12:                          in                    al,dx
+	                                  and                   al,00100000b
+	                                  jz                    again12
+
+	                                  mov                   dx,3f8h
+	                                  mov                   al,sends
+	                                  out                   dx,al
+
+
+	                                  ret
+send_data endp
+
+	;__________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
+handel_backspace_SEND proc near
+	;handel sends
+	                                  cmp                   counter_x,1
+	                                  JE                    the_start_line
+
+	                                  dec                   counter_x
+	                                  mov                   sends ,0
+	                                  print_mesg            counter_x,counter_y1,1,sends
+	                                  dec                   counter_x
+	                                  mov                   sends ,8
+	                                  jmp                   return_handel_backspace_SEND
+
+	the_start_line:                   
+	                                  DEC                   counter_x
+	                                  cmp                   counter_y1,0
+	                                  je                    return_handel_backspace_SEND
+	                                  dec                   counter_y1
+
+	                                  mov                   counter_x,78
+	                                  mov                   sends ,0
+	                                  print_mesg            counter_x,counter_y1,1,sends
+	                                  mov                   sends ,8
+	                                  mov                   counter_x,77
+	                                  jmp                   return_handel_backspace_SEND
+
+	return_handel_backspace_SEND:     
+	                                  ret
+handel_backspace_SEND endp
+
+	;__________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
+handel_backspace_RECIEVE proc near
+	;handel recieve
+	                                  cmp                   counter,1
+	                                  JE                    the_start_line_rec
+
+	                                  dec                   counter
+	                                  mov                   recieves ,0
+	                                  print_mesg            counter,counter_y2,1,recieves
+	                                  dec                   counter
+	                                  mov                   recieves ,8
+	                                  jmp                   return_handel_backspace_recieves
+
+	the_start_line_rec:               
+	                                  DEC                   counter
+	                                  cmp                   counter_y2,13
+	                                  je                    return_handel_backspace_recieves
+	                                  dec                   counter_y2
+
+	                                  mov                   counter,78
+	                                  mov                   recieves ,0
+	                                  print_mesg            counter,counter_y2,1,recieves
+	                                  mov                   recieves ,8
+	                                  mov                   counter,77
+	                                  jmp                   return_handel_backspace_recieves
+
+	return_handel_backspace_recieves: 
+	                                  ret
+
+handel_backspace_RECIEVE endp
+
+	;__________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
+CHAT_SEND PROC near
+	;send data
+	s_looping:                        
+	                                  move_cursor           counter_x,counter_y1
+	                                  mov                   ax,0
+	                                  mov                   ah,1
+	                                  int                   16h
+	                                  cmp                   al,0
+	                                  je                    no_input
+	;clear the buffer
+	;ClearBuffer
+	                                  call                  clearkeyboardbuffer
+	                                  mov                   sends,al
+	;--------------------------------checking
+	                                  cmp                   sends,13
+	                                  je                    send_enter
+
+	                                  cmp                   sends,8
+	                                  jne                   not_backspace
+	                                  call                  handel_backspace_SEND
+	not_backspace:                    
+
+
+	                                  print_mesg            counter_x,counter_y1,1,sends
+	                                  jmp                   conrinue_prog_send
+	send_enter:                       
+	                                  mov                   counter_x,78
+	conrinue_prog_send:               
+
+
+
+	                                  call                  send_data
+	                                  inc                   counter_x
+	                                  mov                   al,counter_x
+	                                  cmp                   al,79
+	                                  jne                   no_input
+	                                  inc                   counter_y1
+
+	                                  call                  check_scroll_up_sending
+
+	                                  mov                   al,1
+	                                  mov                   counter_x,al
+	no_input:                         
+	                                  RET
+CHAT_SEND ENDP
+
+	;__________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
+CHAT_RECIEVE PROC near
+	r_looping:                        
+	                                  call                  recieve_data
+	;checking the al 0-> no_input , otherwise-> there's an input
+	                                  cmp                   al,0
+	                                  je                    fakes
+
+	;--------------------checking input for esc or enter(new line) or backspace
+	                                  cmp                   recieves,13
+	                                  jne                   normal_msg
+
+
+
+	                                  mov                   counter,78
+	                                  jmp                   conrinue_prog
+	normal_msg:                       
+
+
+	                                  cmp                   recieves,8
+	                                  jne                   not_backspace_recieves
+	                                  call                  handel_backspace_RECIEVE
+	not_backspace_recieves:           
+
+
+
+
+
+	                                  print_mesg            counter,counter_y2,1,recieves
+	conrinue_prog:                    
+	                                  inc                   counter
+	                                  mov                   al,counter
+	                                  cmp                   al,79
+	                                  jne                   fakes
+	                                  inc                   counter_y2
+
+	                                  call                  check_scroll_up_recieving
+
+	                                  mov                   al,1
+	                                  mov                   counter,al
+	fakes:                            
+	                                  RET
+CHAT_RECIEVE ENDP
+
+     ;________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+get_current_video_mode proc near
+mov ah,0fh
+mov bh,0
+int 10h
+mov current_video_mode,al
+ret
+get_current_video_mode endp
+	 ;________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
+chat_mode_set_initials proc near
+	                                  mov                   sends,'$'
+									  mov                   recieves,'$'
+                                      mov                    counter,1
+	                                  mov                    counter_x,1
+	                                  mov                    counter_y1,0
+	                                  mov                    counter_y2,13
+
+	                                  mov s_cursor,0
+									  mov s_cursor+1,0
+	                                  mov r_cursor,0           
+                                     mov r_cursor+1,13 
+
+
+
+									  ret
+chat_mode_set_initials endp
 chat_mode PROC NEAR
-	; clear
+                                      call get_current_video_mode
+									  
+	                                  mov                   ax,3
+	                                  int                   10h
+
+	; background
 	                                  MOV                   AH, 06h                                                                  	; Scroll up function
 	                                  XOR                   AL, AL                                                                   	; Clear entire screen
 	                                  mov                   CX,  0                                                                   	; Upper left corner CH=row, CL=column
-	                                  MOV                   DX, 184FH                                                                	; lower right corner DH=row, DL=column
-	                                  MOV                   BH, 07fh
+	                                  MOV                   DX, 0b4FH                                                                	; lower right corner DH=row, DL=column
+	                                  MOV                   BH, sendind_colors
 	                                  INT                   10H
-	                                  print_mesg            0,23,1,dashedline
-	                                  print_mesg            0,24,1,chat_msg1
-	                                  print_mesg            0,10,1,chat_msg2
-	                                  print_mesg            0,11,1,chat_msg3
 
-	;----------------------------------------------------------this part is temporary till we add the chat mode
-	;wait for a key to proceed and then proceed
-	checkchat:                        
-	                                  mov                   ax,0
-	                                  int                   16h
-	                                  cmp                   ah,1
-	                                  je                    reurnchat
-	                                  cmp                   ah,60
-	                                  jne                   checkchat
-	                                  call                  Game
-	reurnchat:                        
-	                                  RET
+	                                  MOV                   AH, 06h                                                                  	; Scroll up function
+	                                  XOR                   AL, AL                                                                   	; Clear entire screen
+	                                  mov                   CX,  0c00H                                                               	; Upper left corner CH=row, CL=column
+	                                  MOV                   DX, 0c4FH                                                                	; lower right corner DH=row, DL=column
+	                                  MOV                   BH, 0h
+	                                  INT                   10H
 
+	                                  MOV                   AH, 06h                                                                  	; Scroll up function
+	                                  XOR                   AL, AL                                                                   	; Clear entire screen
+	                                  mov                   CX,  0d00H                                                               	; Upper left corner CH=row, CL=column
+	                                  MOV                   DX, 184FH                                                                	; lower right corner DH=row, DL=column
+	                                  MOV                   BH, recieving_colors
+	                                  INT                   10H
+									  call clearkeyboardbuffer
+									  call         chat_mode_set_initials
+	;-----------------------------------------------------------------------------------------------------------------
+	LOOPING:                          
+	                                  CALL                  CHAT_SEND
+	                                  CMP                   sends,27
+	                                  je                    close_chat
+	                                  CALL                  CHAT_RECIEVE
+	                                  CMP                   recieves,27
+	                                  je                    close_chat
+	                                  JMP                   LOOPING
+	;-------------------------------------------------======================-------recieve data
+
+
+	close_chat:                       
+                                      
+									  mov                   ax, 0
+									  mov                   al,current_video_mode
+	                                  INT                   10h
+	                                  mov                   bx,0
+	                                  ClearArea             WindowsHeight,WindowsWidth,bx,bx
 	                                  ret
+
+
 chat_mode ENDP
 	;__________________________________________________________________
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
-	
+
 Initial_Conditions Proc NEAR
 
 	;Draw The Background
 	                                  mov                   bx,0
 	                                  ClearArea             WindowsHeight,WindowsWidth,bx,bx
-									  
-	                                  
+			
+			
 
 	                                  mov                   Ball_X,WindowsWidth/4-Ballsize/2
 	                                  cmp                   Last_Winner,2
@@ -3117,7 +3470,7 @@ MoveBall PROC	NEAR
 	                                  neg                   BallVerticalVelocity
 	                                  mov                   Ball_Y,GroundStartY-BallSize
 	                                  CALL                  incrementscore
-									 
+			
 	abbas:                            
 	;------------CHECK RIGHT WALL
 	                                  mov                   bx,Ball_X
@@ -3500,7 +3853,7 @@ final_screen proc NEAR
 	                                  MOV                   DX, 184FH                                                                	; lower right corner DH=row, DL=column
 	                                  MOV                   BH, 07fh
 	                                  INT                   10H
-                                     
+			
 	                                  print_mesg            0,10,1,username1+2
 	                                  print_mesg            username1+1,10,1,final_msg_1
 	                                  print_mesg            0,0,0,score_ascii_1
