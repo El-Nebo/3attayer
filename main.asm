@@ -1854,7 +1854,7 @@ BackgroundData ENDS
 	chat_msg1               db  "*The chat mode is currently unavailable (please try again later).$"
 	chat_msg2               db  "*To start volleyball game press F2",'$'
 	chat_msg3               db  "*To end the program press ESC",'$'
-    current_video_mode      db  ?
+	current_video_mode      db  ?
 
 
 
@@ -2340,6 +2340,10 @@ Adjusting_GAME_LEVEL PROC NEAR
 	                                  RET
 Adjusting_GAME_LEVEL ENDP
 
+	;__________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
 Game PROC NEAR
 	;open graphics mode
 	                                  mov                   ax, 0013h
@@ -2413,6 +2417,10 @@ Game PROC NEAR
 	                                  RET
 GAME ENDP
 
+	;__________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
 Check_Player2_for_winner PROC NEar
 	                                  cmp                   score_1,MAX_Score
 	                                  jne                   cmpscr2
@@ -2438,6 +2446,11 @@ Receive_Data_From_Player_1 PROC NEAR
 	;   mov                   bh,-22
 	;   mov                   Char_Sent,bh
 	;   call                  Send_Char
+	                                  CALL                  Force_Receive_Char
+	                                  mov                   bl,Char_Received
+	                                  mov                   exit,bl
+
+
 
 	                                  CALL                  Force_Receive_Char
 	                                  mov                   bl,Char_Received
@@ -2510,6 +2523,10 @@ Send_Data_to_Player_2 PROC NEAR
 	;                                   cmp                   Char_Received,-22
 	;                                   jne                   LLPP
 
+
+	                                  mov                   bl,exit
+	                                  mov                   Char_Sent,bl
+	                                  CALL                  Send_Char
 
 	                                  mov                   bx,Ball_X
 	                                  mov                   Char_Sent,bl
@@ -2647,12 +2664,20 @@ Player2_Clear PROC NEAR
 	                                  RET
 Player2_Clear ENDP
 
+	;__________________________________________________________________
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
+
 try_proc_Check_For_Key_Pressed proc near
-Check_For_Key_Pressed
-ret
+	                                  Check_For_Key_Pressed
+	                                  ret
 try_proc_Check_For_Key_Pressed endp
+
+	;__________________________________________________________________
+	;______________________________PROC BREAK__________________________
+	;__________________________________________________________________
+
+
 MAINMENU PROC NEAR
 	; clear
 	MAINMENUStart:                    
@@ -2729,7 +2754,8 @@ MAINMENU PROC NEAR
 
 	palyer2_pressed_f1:               
 	                                  print_status_2_mesg   username2+2,wantstochat
-	LP1:                              call try_proc_Check_For_Key_Pressed
+	                                  mov                   Controller_Player,2
+	LP1:                              call                  try_proc_Check_For_Key_Pressed
 	                                  cmp                   ah,F2
 	                                  je                    JKJK
 	                                  cmp                   ah,F3
@@ -2764,6 +2790,7 @@ MAINMENU PROC NEAR
 	OIOTTIO:                          JMP                   SendThenEnd
 	palyer1_pressed_f1:               
 	                                  print_status_3_mesg   waiting,username2+2,responsetochat
+	                                  mov                   Controller_Player,1
 	                                  mov                   Char_Sent,F1
 	                                  CALL                  Send_Char
 	LP3:                              
@@ -3100,40 +3127,58 @@ CHAT_RECIEVE PROC near
 	                                  RET
 CHAT_RECIEVE ENDP
 
-     ;________________________________________________________________
+	;________________________________________________________________
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
 get_current_video_mode proc near
-mov ah,0fh
-mov bh,0
-int 10h
-mov current_video_mode,al
-ret
+	                                  mov                   ah,0fh
+	                                  mov                   bh,0
+	                                  int                   10h
+	                                  mov                   current_video_mode,al
+	                                  ret
 get_current_video_mode endp
-	 ;________________________________________________________________
+	;________________________________________________________________
 	;______________________________PROC BREAK__________________________
 	;__________________________________________________________________
 
 chat_mode_set_initials proc near
 	                                  mov                   sends,'$'
-									  mov                   recieves,'$'
-                                      mov                    counter,1
-	                                  mov                    counter_x,1
-	                                  mov                    counter_y1,0
-	                                  mov                    counter_y2,13
+	                                  mov                   recieves,'$'
+	                                  mov                   counter,1
+	                                  mov                   counter_x,1
+	                                  mov                   counter_y1,0
+	                                  mov                   counter_y2,13
 
-	                                  mov s_cursor,0
-									  mov s_cursor+1,0
-	                                  mov r_cursor,0           
-                                     mov r_cursor+1,13 
+	                                  mov                   s_cursor,0
+	                                  mov                   s_cursor+1,0
+	                                  mov                   r_cursor,0
+	                                  mov                   r_cursor+1,13
 
 
 
-									  ret
+	                                  ret
 chat_mode_set_initials endp
 chat_mode PROC NEAR
-                                      call get_current_video_mode
-									  
+	                                  call                  get_current_video_mode
+	;-----------------------------------------------
+	                                  cmp                   Controller_Player,1
+	                                  jne                   UIOIUIOO
+	;if current is controller
+	                                  mov                   bh,-19
+	                                  mov                   Char_Sent,bh
+	                                  call                  Send_Char
+	                                  JMP                   PPPEESD
+	;else
+
+	UIOIUIOO:                         
+	                            
+	                                  call                  Receive_Char
+	                                  cmp                   Char_Received,-19
+	                                  jne                   UIOIUIOO
+
+	;delay   0,10000
+	;-----------------------------------------------
+	PPPEESD:                          
 	                                  mov                   ax,3
 	                                  int                   10h
 
@@ -3158,8 +3203,8 @@ chat_mode PROC NEAR
 	                                  MOV                   DX, 184FH                                                                	; lower right corner DH=row, DL=column
 	                                  MOV                   BH, recieving_colors
 	                                  INT                   10H
-									  call clearkeyboardbuffer
-									  call         chat_mode_set_initials
+	                                  call                  clearkeyboardbuffer
+	                                  call                  chat_mode_set_initials
 	;-----------------------------------------------------------------------------------------------------------------
 	LOOPING:                          
 	                                  CALL                  CHAT_SEND
@@ -3174,8 +3219,8 @@ chat_mode PROC NEAR
 
 	close_chat:                       
                                       
-									  mov                   ax, 0
-									  mov                   al,current_video_mode
+	                                  mov                   ax, 0
+	                                  mov                   al,current_video_mode
 	                                  INT                   10h
 	                                  mov                   bx,0
 	                                  ClearArea             WindowsHeight,WindowsWidth,bx,bx
