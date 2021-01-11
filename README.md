@@ -2,6 +2,13 @@
 
 3attayer is online game that can be played by two players. The two players can choose to play the game on the same PC or to play each on his/her PC. The game is a volley ball game in which you should make the ball touches other player ground to take the point. The game has online chat within it, players can pause the game and chat for a while then return to the game again.
 
+## :video_camera: GIFS
+<div align="center">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/GIFs/1.gif">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/GIFs/2.gif">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/GIFs/3.gif">
+</div>
+
 ## 📷 Screenshots
 <div align="center">
   <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/Screen%20Shots/Usernames.PNG">
