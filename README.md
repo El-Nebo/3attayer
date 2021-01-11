@@ -28,7 +28,7 @@ project
 ```
 
 For running the game online, run the game on two PC's connected via cable. 
-<b>Game shall not start untill the two players one the game<b>
+<b>Game shall not start untill the two players one the game</b>
 
 ##  How To Play <a name = "play"></a>
 You should move throuh your area to push the ball against your ground trying to get the point by making the ball reaches other player's ground.
