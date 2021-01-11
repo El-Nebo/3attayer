@@ -3,20 +3,20 @@
 3attayer is online game that can be played by two players. The two players can choose to play the game on the same PC or to play each on his/her PC. The game is a volley ball game in which you should make the ball touches other player ground to take the point. The game has online chat within it, players can pause the game and chat for a while then return to the game again.
 ## :video_camera: GIFS
 <div align="center">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-2/GIFs/1.gif">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-2/GIFs/2.gif">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-2/GIFs/3.gif">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-2/GIFs/4.gif">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Offline-Game/GIFs/1.gif">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Offline-Game/GIFs/2.gif">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Offline-Game/GIFs/3.gif">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Offline-Game/GIFs/4.gif">
 </div>
   
 ## 📷 Screenshots
 <div align="center">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-2/Screen%20Shots/UserNames.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-2/Screen%20Shots/UserNames2.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-2/Screen%20Shots/MainMenu.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-2/Screen%20Shots/Game.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-2/Screen%20Shots/Game%202.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-2/Screen%20Shots/Score%20Screen.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Offline-Game/Screen%20Shots/UserNames.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Offline-Game/Screen%20Shots/UserNames2.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Offline-Game/Screen%20Shots/MainMenu.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Offline-Game/Screen%20Shots/Game.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Offline-Game/Screen%20Shots/Game%202.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Offline-Game/Screen%20Shots/Score%20Screen.PNG">
 </div>
 
 ## :triangular_flag_on_post: Get Started 
@@ -24,7 +24,7 @@
 2. Open ```DOSBox```.
 3. Write the following for running the game.
 ```
-mount Z D:\Games\3attayer\Phase-3\code
+mount Z D:\Games\3attayer\Offline-Game\code
 Z:
 project
 ```
@@ -32,10 +32,12 @@ project
 ##  How To Play <a name = "play"></a>
 You should move throuh your area to push the ball against your ground trying to get the point by making the ball reaches other player's ground.
 keyboard controllers:
-- ```W``` => ```Jump```
-- ```A``` => ```Left```
-- ```D``` => ```Right```
-
+- ```W``` => ```Player1 Jump```
+- ```A``` => ```Player1 Left```
+- ```D``` => ```Player1 Right```
+- ```:arrow_up:``` => ```Player2 Jump```
+- ```:arrow_left:``` => ```Player2 Left```
+- ```:arrow_right:``` => ```Player2 Right```
 
 ## 💻 Built with <a name = "tech"></a>
 - Assembly8086
