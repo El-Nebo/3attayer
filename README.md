@@ -4,23 +4,23 @@
 
 ## :video_camera: GIFS
 <div align="center">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/GIFs/1.gif">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/GIFs/2.gif">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/GIFs/3.gif">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/GIFs/1.gif">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/GIFs/2.gif">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/GIFs/3.gif">
 </div>
 
 ## 📷 Screenshots
 <div align="center">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/Screen%20Shots/Usernames.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/Screen%20Shots/MainMenu-Initial.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/Screen%20Shots/MainMenu-Chat%20Invitation.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/Screen%20Shots/MainMenu-Game%20Invitation.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/Screen%20Shots/Chate%20Mode.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/Screen%20Shots/Choosing%20Level.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/Screen%20Shots/Game.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/Screen%20Shots/Game%202.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/Screen%20Shots/In%20Game%20Chat.PNG">
-  <img src="https://github.com/El-Nebo/3attayer/blob/Phase-3/Screen%20Shots/Score%20Screen.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/Screen%20Shots/Usernames.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/Screen%20Shots/MainMenu-Initial.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/Screen%20Shots/MainMenu-Chat%20Invitation.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/Screen%20Shots/MainMenu-Game%20Invitation.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/Screen%20Shots/Chate%20Mode.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/Screen%20Shots/Choosing%20Level.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/Screen%20Shots/Game.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/Screen%20Shots/Game%202.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/Screen%20Shots/In%20Game%20Chat.PNG">
+  <img src="https://github.com/El-Nebo/3attayer/blob/Online-Game/Screen%20Shots/Score%20Screen.PNG">
 
 </div>
 
@@ -29,7 +29,7 @@
 2. Open ```DOSBox```.
 3. Write the following for running the game.
 ```
-mount Z D:\Games\3attayer\Phase-3\code
+mount Z D:\Games\3attayer\Online-Game\code
 Z:
 project
 ```
